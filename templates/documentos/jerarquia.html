@@ -24,10 +24,10 @@
                 <h4 class="mb-0"><i class="fas fa-sitemap me-2"></i>Estructura Jerárquica FISEI</h4>
                 {% if user.rol == 'admin' or user.rol == 'administrativo' %}
                 <div class="btn-group">
-                    <a href="{% url 'crear_nodo' %}" class="btn btn-sm btn-success">
+                    <a href="{% url 'documentos:crear_nodo' %}" class="btn btn-sm btn-success">
                         <i class="fas fa-plus me-1"></i>Nuevo Nodo
                     </a>
-                    <a href="{% url 'subir_documento' %}" class="btn btn-sm btn-info">
+                    <a href="{% url 'documentos:subir_documento' %}" class="btn btn-sm btn-info">
                         <i class="fas fa-file-upload me-1"></i>Subir Documento
                     </a>
                 </div>

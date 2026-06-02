@@ -58,7 +58,7 @@ def solicitar_turno_view(request):
             registrar_accion(request.user, 'turnos', 'Turno solicitado', f'Código {turno.codigo}')
             
             messages.success(request, f"Turno {turno.codigo} solicitado con éxito. Por favor espere.")
-            return redirect('estado_cola')
+            return redirect('turnos:estado_cola')
     else:
         form = TurnoSolicitudForm()
     
@@ -118,7 +118,7 @@ def iniciar_atencion_view(request, turno_id):
     turno.hora_inicio_atencion = timezone.now()
     turno.save()
     messages.info(request, f"Atendiendo a {turno.usuario.username}")
-    return redirect('dashboard_administrativo')
+    return redirect('turnos:dashboard_administrativo')
 
 @login_required
 def finalizar_atencion_view(request, turno_id):

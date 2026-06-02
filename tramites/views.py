@@ -80,7 +80,7 @@ def solicitar_tramite_view(request):
             historial_estados_memoria[tramite.id] = ld
             
             messages.success(request, f"Trámite {tramite.codigo} registrado con éxito.")
-            return redirect('mis_tramites')
+            return redirect('tramites:mis_tramites')
     else:
         form = TramiteSolicitudForm()
     
@@ -175,7 +175,7 @@ def detalle_tramite_admin_view(request, tramite_id):
             })
             
             messages.success(request, "Estado actualizado correctamente.")
-            return redirect('gestion_administrativa')
+            return redirect('tramites:gestion_administrativa')
     else:
         form = CambioEstadoForm(initial={'estado_nuevo': tramite.estado})
 
