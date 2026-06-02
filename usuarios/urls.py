@@ -5,6 +5,7 @@ from . import views
 app_name = 'usuarios'
 
 urlpatterns = [
+    path('', views.dashboard_view, name='index'),
     path('login/', views.CustomLoginView.as_view(), name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('registro/', views.registro_view, name='registro'),

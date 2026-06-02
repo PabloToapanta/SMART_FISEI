@@ -1,90 +1,110 @@
 {% extends 'base.html' %}
 
-{% block title %}Reporte de Trámites - SMART{% endblock %}
+{% block title %}Centro de Reportes - SmartFISEI{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h2 class="mb-4"><i class="fas fa-chart-pie me-2 text-primary"></i>Reporte de Trámites</h2>
+        <h2 class="mb-4"><i class="fas fa-chart-line me-2 text-primary"></i>Centro de Reportes Administrativos</h2>
 
         <div class="card shadow mb-4">
-            <div class="card-header bg-dark text-white">
-                <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros de Búsqueda</h5>
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros de Reporte</h5>
             </div>
             <div class="card-body">
                 <form method="post" class="row g-3">
                     {% csrf_token %}
                     <div class="col-md-3">
+                        <label class="form-label fw-bold">Tipo de Reporte</label>
+                        <select name="tipo_reporte" class="form-select" onchange="this.form.submit()">
+                            <option value="tramites" {% if filtros.tipo_reporte == 'tramites' %}selected{% endif %}>Trámites Académicos</option>
+                            <option value="turnos" {% if filtros.tipo_reporte == 'turnos' %}selected{% endif %}>Turnos de Atención</option>
+                            <option value="estudiantes" {% if filtros.tipo_reporte == 'estudiantes' %}selected{% endif %}>Listado de Estudiantes</option>
+                            <option value="administradores" {% if filtros.tipo_reporte == 'administradores' %}selected{% endif %}>Personal Administrativo</option>
+                        </select>
+                    </div>
+
+                    {% if filtros.tipo_reporte == 'tramites' or filtros.tipo_reporte == 'turnos' %}
+                    <div class="col-md-2">
                         <label class="form-label fw-bold">Fecha Desde</label>
                         <input type="date" name="fecha_desde" class="form-control" value="{{ filtros.fecha_desde }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label fw-bold">Fecha Hasta</label>
                         <input type="date" name="fecha_hasta" class="form-control" value="{{ filtros.fecha_hasta }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label fw-bold">Estado</label>
                         <select name="estado" class="form-select">
-                            <option value="">Todos los estados</option>
-                            <option value="pendiente" {% if filtros.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
-                            <option value="en_proceso" {% if filtros.estado == 'en_proceso' %}selected{% endif %}>En Proceso</option>
-                            <option value="resuelto" {% if filtros.estado == 'resuelto' %}selected{% endif %}>Resuelto</option>
-                            <option value="archivado" {% if filtros.estado == 'archivado' %}selected{% endif %}>Archivado</option>
+                            <option value="">Todos</option>
+                            {% if filtros.tipo_reporte == 'tramites' %}
+                                <option value="pendiente" {% if filtros.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                                <option value="en_proceso" {% if filtros.estado == 'en_proceso' %}selected{% endif %}>En Proceso</option>
+                                <option value="resuelto" {% if filtros.estado == 'resuelto' %}selected{% endif %}>Resuelto</option>
+                                <option value="archivado" {% if filtros.estado == 'archivado' %}selected{% endif %}>Archivado</option>
+                            {% else %}
+                                <option value="espera" {% if filtros.estado == 'espera' %}selected{% endif %}>En Espera</option>
+                                <option value="llamado" {% if filtros.estado == 'llamado' %}selected{% endif %}>Llamado</option>
+                                <option value="en_atencion" {% if filtros.estado == 'en_atencion' %}selected{% endif %}>En Atención</option>
+                                <option value="atendido" {% if filtros.estado == 'atendido' %}selected{% endif %}>Atendido</option>
+                            {% endif %}
                         </select>
                     </div>
+                    {% endif %}
+
+                    {% if filtros.tipo_reporte == 'tramites' %}
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Tipo de Trámite</label>
                         <select name="tipo_id" class="form-select">
                             <option value="">Todos los tipos</option>
-                            {% for tipo in tipos %}
+                            {% for tipo in tipos_tramite %}
                             <option value="{{ tipo.id }}" {% if filtros.tipo_id == tipo.id %}selected{% endif %}>{{ tipo.nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                    {% endif %}
+
                     <div class="col-12 text-end">
                         <button type="submit" class="btn btn-primary px-4">
-                            <i class="fas fa-search me-2"></i>Generar Reporte
+                            <i class="fas fa-sync me-2"></i>Actualizar Vista
                         </button>
+                        {% if resumen %}
+                        <a href="{% url 'historial:exportar_pdf' %}?tipo_reporte={{ filtros.tipo_reporte }}&fecha_desde={{ filtros.fecha_desde|default:'' }}&fecha_hasta={{ filtros.fecha_hasta|default:'' }}&estado={{ filtros.estado|default:'' }}&tipo_id={{ filtros.tipo_id|default:'' }}" 
+                           class="btn btn-danger px-4 ms-2">
+                            <i class="fas fa-file-pdf me-2"></i>Descargar PDF
+                        </a>
+                        {% endif %}
                     </div>
                 </form>
             </div>
         </div>
 
         {% if resumen %}
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card bg-primary text-white text-center shadow-sm">
-                    <div class="card-body py-3">
-                        <h6 class="text-uppercase small">Pendientes</h6>
-                        <h2 class="mb-0">{{ resumen.pendiente }}</h2>
+            {% if filtros.tipo_reporte == 'tramites' or filtros.tipo_reporte == 'turnos' %}
+            <div class="row mb-4">
+                {% for label, total in resumen.items %}
+                <div class="col-md-2 mb-3">
+                    <div class="card shadow-sm border-0 text-center">
+                        <div class="card-body py-2">
+                            <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">{{ label }}</small>
+                            <h3 class="mb-0">{{ total }}</h3>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white text-center shadow-sm">
+                        <div class="card-body py-3">
+                            <h6 class="text-uppercase small">Total Registrados</h6>
+                            <h2 class="mb-0">{{ resumen.total }}</h2>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="card bg-warning text-dark text-center shadow-sm">
-                    <div class="card-body py-3">
-                        <h6 class="text-uppercase small">En Proceso</h6>
-                        <h2 class="mb-0">{{ resumen.en_proceso }}</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-success text-white text-center shadow-sm">
-                    <div class="card-body py-3">
-                        <h6 class="text-uppercase small">Resueltos</h6>
-                        <h2 class="mb-0">{{ resumen.resuelto }}</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-secondary text-white text-center shadow-sm">
-                    <div class="card-body py-3">
-                        <h6 class="text-uppercase small">Archivados</h6>
-                        <h2 class="mb-0">{{ resumen.archivado }}</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
+            {% endif %}
         {% endif %}
 
         {% if tramites is not None %}
@@ -97,36 +117,78 @@
                             <th>Solicitante</th>
                             <th>Tipo</th>
                             <th>Estado</th>
-                            <th>Fecha Registro</th>
+                            <th>Fecha</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for t in tramites %}
                         <tr>
                             <td><span class="fw-bold">{{ t.codigo }}</span></td>
-                            <td>{{ t.solicitante.get_full_name|default:t.solicitante.username }}</td>
+                            <td>{{ t.solicitante.username }}</td>
                             <td>{{ t.tipo.nombre }}</td>
-                            <td>
-                                {% if t.estado == 'pendiente' %}
-                                <span class="badge bg-secondary">Pendiente</span>
-                                {% elif t.estado == 'en_proceso' %}
-                                <span class="badge bg-info text-dark">En Proceso</span>
-                                {% elif t.estado == 'resuelto' %}
-                                <span class="badge bg-success">Resuelto</span>
-                                {% else %}
-                                <span class="badge bg-dark">Archivado</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ t.fecha_registro|date:"d/m/Y H:i" }}</td>
+                            <td><span class="badge bg-secondary">{{ t.get_estado_display }}</span></td>
+                            <td>{{ t.fecha_registro|date:"d/m/Y" }}</td>
                         </tr>
                         {% empty %}
+                        <tr><td colspan="5" class="text-center py-4">No hay datos con los filtros seleccionados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% elif turnos is not None %}
+        <div class="card shadow">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <td colspan="5" class="text-center py-5">
-                                <div class="alert alert-warning d-inline-block">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>No se encontraron trámites con esos filtros.
-                                </div>
-                            </td>
+                            <th>Código</th>
+                            <th>Usuario</th>
+                            <th>Motivo</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
                         </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in turnos %}
+                        <tr>
+                            <td><span class="fw-bold">{{ t.codigo }}</span></td>
+                            <td>{{ t.usuario.username }}</td>
+                            <td>{{ t.get_motivo_display }}</td>
+                            <td><span class="badge bg-info text-dark">{{ t.get_estado_display }}</span></td>
+                            <td>{{ t.hora_solicitud|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center py-4">No hay datos con los filtros seleccionados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% elif usuarios is not None %}
+        <div class="card shadow">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Nombre Completo</th>
+                            <th>Email</th>
+                            <th>Cédula</th>
+                            <th>Rol</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}
+                        <tr>
+                            <td><span class="fw-bold">{{ u.username }}</span></td>
+                            <td>{{ u.get_full_name }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>{{ u.cedula|default:"-" }}</td>
+                            <td><span class="badge bg-dark">{{ u.get_rol_display }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center py-4">No hay usuarios registrados en este rol.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>

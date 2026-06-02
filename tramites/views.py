@@ -45,8 +45,9 @@ def inicializar_catalogo_completo():
         )
 
     # 2. Sincronizar con Lista Secuencial en memoria (Req 1 y 5)
-    if catalogo_tramites_memoria.tamaño() == 0:
-        tipos_db = TipoTramite.objects.filter(activo=True).order_by('id')
+    tipos_db = TipoTramite.objects.filter(activo=True).order_by('id')
+    if catalogo_tramites_memoria.tamaño() != tipos_db.count():
+        catalogo_tramites_memoria.vaciar()
         for t in tipos_db:
             catalogo_tramites_memoria.insertar(t)
 
