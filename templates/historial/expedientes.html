@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Expedientes Activos - SMART{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <h2 class="mb-4"><i class="fas fa-folder-open me-2 text-primary"></i>Navegación de Expedientes Activos</h2>
+
+        {% if total_expedientes == 0 %}
+            <div class="alert alert-info shadow-sm text-center py-5">
+                <i class="fas fa-info-circle fa-3x mb-3"></i>
+                <h5>No tienes expedientes activos</h5>
+                <p class="mb-0">Todos tus trámites han sido archivados o aún no has registrado ninguno.</p>
+            </div>
+        {% else %}
+            <!-- Card Principal del Expediente Actual -->
+            <div class="card shadow border-primary mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Expediente: {{ expediente_actual.codigo }}</h4>
+                    <span class="badge bg-light text-primary fs-6">{{ expediente_actual.get_estado_display }}</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <h5 class="text-muted small text-uppercase fw-bold">Tipo de Trámite</h5>
+                            <p class="fs-5">{{ expediente_actual.tipo.nombre }}</p>
+                            
+                            <h5 class="text-muted small text-uppercase fw-bold">Descripción del Requerimiento</h5>
+                            <p class="text-dark">{{ expediente_actual.descripcion }}</p>
+                        </div>
+                        <div class="col-md-5 border-start">
+                            <h5 class="text-muted small text-uppercase fw-bold">Fecha de Registro</h5>
+                            <p>{{ expediente_actual.fecha_registro|date:"d/m/Y H:i" }}</p>
+                            
+                            <h5 class="text-muted small text-uppercase fw-bold">Última Actualización</h5>
+                            <p>{{ expediente_actual.fecha_actualizacion|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Barra de Navegación (Lista Doble) -->
+                <div class="card-footer bg-light py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'historial:expedientes' %}?posicion={{ posicion_actual }}&accion=anterior" 
+                           class="btn btn-outline-primary {% if not tiene_anterior %}disabled{% endif %}">
+                            <i class="fas fa-chevron-left me-2"></i>Anterior
+                        </a>
+                        
+                        <span class="fw-bold">
+                            Expediente {{ posicion_actual|add:1 }} de {{ total_expedientes }}
+                        </span>
+                        
+                        <a href="{% url 'historial:expedientes' %}?posicion={{ posicion_actual }}&accion=siguiente" 
+                           class="btn btn-outline-primary {% if not tiene_siguiente %}disabled{% endif %}">
+                            Siguiente<i class="fas fa-chevron-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline de Historial de Estados -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 text-muted small text-uppercase fw-bold">Historial de Seguimiento</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center text-center">
+                        {% for h in historial_estados %}
+                        <div class="col-auto mb-3">
+                            <div class="p-3 border rounded bg-white shadow-sm" style="min-width: 180px;">
+                                <small class="text-muted d-block mb-1">{{ h.fecha|date:"d/m/y H:i" }}</small>
+                                <span class="badge bg-info text-dark mb-2">{{ h.get_estado_nuevo_display }}</span>
+                                <small class="d-block text-truncate" title="{{ h.responsable.username }}">Por: {{ h.responsable.username }}</small>
+                            </div>
+                        </div>
+                        {% if not forloop.last %}
+                        <div class="col-auto mb-3 px-0">
+                            <i class="fas fa-arrow-right text-muted mx-2"></i>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

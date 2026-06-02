@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Historial de Acciones - SMART{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-history me-2 text-primary"></i>Historial de Acciones</h2>
+            <span class="badge bg-secondary fs-6">{{ total }} acciones recientes</span>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-light">
+                <small class="text-muted text-uppercase fw-bold">Registro procesado mediante Pila (LIFO)</small>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Fecha y Hora</th>
+                            <th>Módulo</th>
+                            <th>Acción</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for accion in acciones %}
+                        <tr>
+                            <td><small class="fw-bold">{{ accion.fecha|date:"d/m/Y H:i:s" }}</small></td>
+                            <td>
+                                {% if accion.modulo == 'turnos' %}
+                                <span class="badge bg-primary">Turnos</span>
+                                {% elif accion.modulo == 'tramites' %}
+                                <span class="badge bg-warning text-dark">Trámites</span>
+                                {% elif accion.modulo == 'documentos' %}
+                                <span class="badge bg-info text-dark">Documentos</span>
+                                {% elif accion.modulo == 'rutas' %}
+                                <span class="badge bg-success">Rutas</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ accion.accion }}</td>
+                            <td><small class="text-muted">{{ accion.detalle }}</small></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <div class="alert alert-info d-inline-block">
+                                    <i class="fas fa-info-circle me-2"></i>No tienes acciones registradas aún.
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

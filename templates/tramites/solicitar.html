@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Solicitar Trámite - SMART{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-file-signature me-2"></i>Nueva Solicitud de Trámite</h4>
+            </div>
+            <div class="card-body p-4">
+                {% if sin_opciones %}
+                <div class="alert alert-warning text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                    <h5>Catálogo Vacío</h5>
+                    <p>No hay tipos de trámites configurados en el sistema actualmente.</p>
+                    {% if user.rol == 'admin' %}
+                    <a href="{% url 'tramites:gestionar_catalogo' %}" class="btn btn-warning">Configurar Catálogo Ahora</a>
+                    {% endif %}
+                </div>
+                {% else %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">Tipo de Trámite (desde Lista Secuencial)</label>
+                        {{ form.tipo }}
+                        {% for error in form.tipo.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">Descripción del Requerimiento</label>
+                        {{ form.descripcion }}
+                        {% for error in form.descripcion.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Registrar Solicitud</button>
+                        <a href="{% url 'tramites:mis_tramites' %}" class="btn btn-outline-secondary">Ver mis trámites</a>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

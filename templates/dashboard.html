@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - SmartFISEI UTA{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #F8F9FA !important;
+    }
+    .welcome-bar {
+        background-color: #C0392B;
+        color: #FFFFFF;
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        border-radius: 4px;
+    }
+    .role-badge {
+        background-color: #FFFFFF;
+        color: #C0392B;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    .stats-card {
+        background: #FFFFFF;
+        border: none;
+        border-left: 4px solid;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .stats-card h2 {
+        color: #2C3E50;
+        margin-bottom: 0;
+        font-weight: 700;
+    }
+    .stats-card span {
+        color: #6C757D;
+        font-size: 0.9rem;
+    }
+    .stats-card i {
+        font-size: 2rem;
+        opacity: 0.2;
+    }
+    .section-title {
+        color: #2C3E50;
+        font-weight: 600;
+        font-size: 1.5rem;
+        margin-bottom: 24px;
+        position: relative;
+    }
+    .section-title::after {
+        content: '';
+        display: block;
+        width: 40px;
+        height: 3px;
+        background-color: #C0392B;
+        margin-top: 8px;
+    }
+    .modules-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+    .module-card {
+        background: #FFFFFF;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+    .module-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .module-header {
+        height: 6px;
+        width: 100%;
+    }
+    .module-body {
+        padding: 24px;
+        flex-grow: 1;
+    }
+    .icon-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 16px;
+    }
+    .module-title {
+        color: #2C3E50;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .module-desc {
+        color: #6C757D;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+    .module-footer {
+        padding: 12px 24px;
+        border-top: 1px solid #E9ECEF;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .quick-access {
+        background-color: #FDEDEC;
+        border-top: 1px solid #E9ECEF;
+        padding: 24px;
+        margin-top: 20px;
+        border-radius: 8px;
+    }
+    .quick-access h6 {
+        color: #C0392B;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Barra de bienvenida -->
+<div class="welcome-bar shadow-sm">
+    <div class="d-flex align-items-center">
+        <i class="bi bi-person-circle fs-3 me-3"></i>
+        <h4 class="mb-0">Bienvenido, {{ request.user.get_full_name|default:request.user.username }}</h4>
+    </div>
+    <div class="role-badge shadow-sm">
+        {% if request.user.rol == 'admin' %}Administrador
+        {% elif request.user.rol == 'administrativo' %}Personal Administrativo
+        {% elif request.user.rol == 'docente' %}Docente
+        {% elif request.user.rol == 'estudiante' %}Estudiante
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estadísticas (Admin/Administrativo) -->
+{% if request.user.rol == 'admin' or request.user.rol == 'administrativo' %}
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="stats-card" style="border-color: #2980B9;">
+            <div>
+                <span>Turnos en espera hoy</span>
+                <h2>{{ 0 }}</h2>
+            </div>
+            <i class="bi bi-people-fill" style="color: #2980B9;"></i>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card" style="border-color: #E67E22;">
+            <div>
+                <span>Trámites pendientes</span>
+                <h2>{{ 0 }}</h2>
+            </div>
+            <i class="bi bi-folder2-open" style="color: #E67E22;"></i>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card" style="border-color: #27AE60;">
+            <div>
+                <span>Documentos cargados</span>
+                <h2>{{ 0 }}</h2>
+            </div>
+            <i class="bi bi-file-earmark-text" style="color: #27AE60;"></i>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card" style="border-color: #C0392B;">
+            <div>
+                <span>Usuarios registrados</span>
+                <h2>{{ 0 }}</h2>
+            </div>
+            <i class="bi bi-person-badge" style="color: #C0392B;"></i>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Módulos del Sistema -->
+<h2 class="section-title">Módulos del Sistema</h2>
+
+<div class="modules-grid">
+    <!-- Turnos -->
+    <div class="module-card" onclick="window.location.href='{% url 'turnos:estado_cola' %}'">
+        <div class="module-header" style="background-color: #2980B9;"></div>
+        <div class="module-body">
+            <div class="icon-circle" style="background-color: rgba(41, 128, 185, 0.1); color: #2980B9;">
+                <i class="bi bi-ticket-perforated"></i>
+            </div>
+            <div class="module-title">Turnos de Atención</div>
+            <div class="module-desc">Solicita y consulta el estado de tus turnos de atención de forma inmediata.</div>
+        </div>
+        <div class="module-footer" style="color: #2980B9;">Abrir módulo &rarr;</div>
+    </div>
+
+    <!-- Trámites -->
+    <div class="module-card" onclick="window.location.href='{% url 'tramites:mis_tramites' %}'">
+        <div class="module-header" style="background-color: #E67E22;"></div>
+        <div class="module-body">
+            <div class="icon-circle" style="background-color: rgba(230, 126, 34, 0.1); color: #E67E22;">
+                <i class="bi bi-folder2-open"></i>
+            </div>
+            <div class="module-title">Mis Trámites</div>
+            <div class="module-desc">Registra solicitudes y revisa el estado de tus trámites en tiempo real.</div>
+        </div>
+        <div class="module-footer" style="color: #E67E22;">Abrir módulo &rarr;</div>
+    </div>
+
+    <!-- Documentos -->
+    <div class="module-card" onclick="window.location.href='{% url 'documentos:jerarquia' %}'">
+        <div class="module-header" style="background-color: #27AE60;"></div>
+        <div class="module-body">
+            <div class="icon-circle" style="background-color: rgba(39, 174, 96, 0.1); color: #27AE60;">
+                <i class="bi bi-file-earmark-richtext"></i>
+            </div>
+            <div class="module-title">Documentos Institucionales</div>
+            <div class="module-desc">Accede a reglamentos, formularios y documentos oficiales de la FISEI.</div>
+        </div>
+        <div class="module-footer" style="color: #27AE60;">Abrir módulo &rarr;</div>
+    </div>
+
+    <!-- Rutas -->
+    <div class="module-card" onclick="window.location.href='{% url 'rutas:mapa' %}'">
+        <div class="module-header" style="background-color: #8E44AD;"></div>
+        <div class="module-body">
+            <div class="icon-circle" style="background-color: rgba(142, 68, 173, 0.1); color: #8E44AD;">
+                <i class="bi bi-map"></i>
+            </div>
+            <div class="module-title">Rutas Internas</div>
+            <div class="module-desc">Encuentra la ruta más corta entre laboratorios, aulas y oficinas de la facultad.</div>
+        </div>
+        <div class="module-footer" style="color: #8E44AD;">Abrir módulo &rarr;</div>
+    </div>
+
+    <!-- Historial -->
+    <div class="module-card" onclick="window.location.href='{% url 'historial:historial' %}'">
+        <div class="module-header" style="background-color: #C0392B;"></div>
+        <div class="module-body">
+            <div class="icon-circle" style="background-color: rgba(192, 57, 43, 0.1); color: #C0392B;">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="module-title">Mi Historial</div>
+            <div class="module-desc">Revisa tus acciones recientes registradas en el sistema SmartFISEI.</div>
+        </div>
+        <div class="module-footer" style="color: #C0392B;">Abrir módulo &rarr;</div>
+    </div>
+
+    <!-- Expedientes (Estudiante/Docente) -->
+    {% if request.user.rol == 'estudiante' or request.user.rol == 'docente' %}
+    <div class="module-card" onclick="window.location.href='{% url 'historial:expedientes' %}'">
+        <div class="module-header" style="background-color: #16A085;"></div>
+        <div class="module-body">
+            <div class="icon-circle" style="background-color: rgba(22, 160, 133, 0.1); color: #16A085;">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <div class="module-title">Mis Expedientes</div>
+            <div class="module-desc">Navega entre tus trámites activos y revisa su evolución detallada.</div>
+        </div>
+        <div class="module-footer" style="color: #16A085;">Abrir módulo &rarr;</div>
+    {% endif %}
+
+    <!-- Reportes (Admin) -->
+    {% if request.user.rol == 'admin' %}
+    <div class="module-card" onclick="window.location.href='{% url 'historial:reportes' %}'">
+        <div class="module-header" style="background-color: #2C3E50;"></div>
+        <div class="module-body">
+            <div class="icon-circle" style="background-color: rgba(44, 62, 80, 0.1); color: #2C3E50;">
+                <i class="bi bi-bar-chart-line"></i>
+            </div>
+            <div class="module-title">Reportes Globales</div>
+            <div class="module-desc">Genera reportes estadísticos de trámites por período, estado o tipo.</div>
+        </div>
+        <div class="module-footer" style="color: #2C3E50;">Abrir módulo &rarr;</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Acceso Rápido -->
+<div class="quick-access shadow-sm">
+    <h6><i class="bi bi-lightning-charge-fill me-2"></i>Accesos directos</h6>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'turnos:estado_cola' %}" class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-people me-1"></i>Ver cola de turnos
+        </a>
+        <a href="{% url 'tramites:solicitar_tramite' %}" class="btn btn-outline-warning btn-sm text-dark">
+            <i class="bi bi-plus-circle me-1"></i>Nuevo trámite
+        </a>
+        <a href="{% url 'documentos:jerarquia' %}" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-search me-1"></i>Buscar documento
+        </a>
+        <a href="{% url 'rutas:mapa' %}" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-geo-alt me-1"></i>Buscar ruta
+        </a>
+    </div>
+</div>
+{% endblock %}

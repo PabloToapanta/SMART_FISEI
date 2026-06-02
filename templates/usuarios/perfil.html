@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Perfil - SMART{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>Editar Perfil</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="row mb-4">
+                    <div class="col-md-4 text-center">
+                        <div class="bg-light rounded-circle p-4 mb-2 mx-auto" style="width: 150px; height: 150px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user fa-5x text-secondary"></i>
+                        </div>
+                        <h5 class="mb-0 text-primary">{{ user.username }}</h5>
+                        <small class="text-muted">{{ user.get_rol_display }}</small>
+                    </div>
+                    <div class="col-md-8 border-start">
+                        <form method="post">
+                            {% csrf_token %}
+                            {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-uppercase">{{ field.label }}</label>
+                                {{ field }}
+                                {% for error in field.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                            <hr>
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'usuarios:dashboard' %}" class="btn btn-secondary">Cancelar</a>
+                                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

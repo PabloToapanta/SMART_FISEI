@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle de Trámite - SMART{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-file-alt me-2 text-primary"></i>Detalle del Trámite {{ tramite.codigo }}</h2>
+            <a href="{% url 'tramites:mis_tramites' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Volver a mis trámites
+            </a>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Información General</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1 text-muted small text-uppercase fw-bold">Tipo de Trámite</p>
+                        <p class="fw-bold">{{ tramite.tipo.nombre }}</p>
+                        
+                        <p class="mb-1 text-muted small text-uppercase fw-bold">Estado Actual</p>
+                        <p>
+                            {% if tramite.estado == 'pendiente' %}
+                            <span class="badge bg-secondary">{{ tramite.get_estado_display }}</span>
+                            {% elif tramite.estado == 'en_proceso' %}
+                            <span class="badge bg-info text-dark">{{ tramite.get_estado_display }}</span>
+                            {% elif tramite.estado == 'resuelto' %}
+                            <span class="badge bg-success">{{ tramite.get_estado_display }}</span>
+                            {% else %}
+                            <span class="badge bg-dark">{{ tramite.get_estado_display }}</span>
+                            {% endif %}
+                        </p>
+                        
+                        <p class="mb-1 text-muted small text-uppercase fw-bold">Fecha de Solicitud</p>
+                        <p>{{ tramite.fecha_registro|date:"d/m/Y H:i" }}</p>
+                        
+                        <hr>
+                        <p class="mb-1 text-muted small text-uppercase fw-bold">Descripción enviada</p>
+                        <p class="small text-dark">{{ tramite.descripcion }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Seguimiento del Proceso (Lista Doble)</h5>
+                        <i class="fas fa-stream text-muted"></i>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for h in historial %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1 fw-bold text-primary">Estado: {{ h.estado|upper }}</h6>
+                                    <small class="text-muted">{{ h.fecha|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <p class="mb-1 text-dark">{{ h.observacion|default:"El trámite ha pasado a este estado." }}</p>
+                                <small class="text-muted">Actualizado por: {{ h.responsable }}</small>
+                            </div>
+                            {% empty %}
+                            <div class="p-5 text-center text-muted">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <p>No hay registros de cambios para este trámite.</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}Mapa de la FISEI - SMART{% endblock %}
+
+{% block extra_css %}
+<link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" type="text/css" />
+<style>
+    #grafo-fisei {
+        height: 620px;
+        width: 100%;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        background-color: #ffffff;
+    }
+    .legend-item {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 15px;
+        font-size: 0.85rem;
+    }
+    .legend-color {
+        width: 15px;
+        height: 15px;
+        border-radius: 3px;
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0"><i class="fas fa-route me-2"></i>Navegación Interna FISEI</h4>
+            </div>
+            <div class="card-body p-4">
+                <form action="{% url 'rutas:buscar_ruta' %}" method="post" class="row g-3 align-items-end">
+                    {% csrf_token %}
+                    <div class="col-md-4">
+                        <label for="origen_id" class="form-label fw-bold">Punto de Origen</label>
+                        <select name="origen_id" id="origen_id" class="form-select" required>
+                            <option value="">Seleccione ubicación...</option>
+                            {% for e in espacios_select %}
+                            <option value="{{ e.id }}">[{{ e.bloque }} - P{{ e.piso }}] {{ e.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="destino_id" class="form-label fw-bold">Punto de Destino</label>
+                        <select name="destino_id" id="destino_id" class="form-select" required>
+                            <option value="">Seleccione ubicación...</option>
+                            {% for e in espacios_select %}
+                            <option value="{{ e.id }}">[{{ e.bloque }} - P{{ e.piso }}] {{ e.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-search-location me-2"></i>Buscar Ruta Más Corta
+                        </button>
+                    </div>
+                </form>
+
+                {% if busqueda_realizada %}
+                    <div class="mt-4">
+                        {% if ruta_ids %}
+                            <div class="alert alert-success border-success shadow-sm">
+                                <h5 class="alert-heading"><i class="fas fa-check-circle me-2"></i>Ruta Encontrada</h5>
+                                <p class="mb-0 fs-5">
+                                    {% for e in espacios_ruta %}
+                                        {{ e.nombre }}{% if not forloop.last %} <i class="fas fa-chevron-right mx-2 text-muted small"></i>{% endif %}
+                                    {% endfor %}
+                                </p>
+                                <hr>
+                                <p class="mb-0 fw-bold">Distancia total estimada: {{ distancia_total }} metros</p>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning border-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>No se encontró una ruta disponible entre esos dos espacios.
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-body p-0">
+                <div id="grafo-fisei"></div>
+            </div>
+            <div class="card-footer bg-light py-3">
+                <div class="d-flex flex-wrap justify-content-center">
+                    <div class="legend-item"><div class="legend-color" style="background-color: #4A90D9;"></div> Aulas</div>
+                    <div class="legend-item"><div class="legend-color" style="background-color: #27AE60;"></div> Laboratorios</div>
+                    <div class="legend-item"><div class="legend-color" style="background-color: #E67E22;"></div> Oficinas</div>
+                    <div class="legend-item"><div class="legend-color" style="background-color: #95A5A6;"></div> Conexiones/Entradas</div>
+                    <div class="legend-item"><div class="legend-color" style="border: 2px solid #E74C3C;"></div> Ruta Seleccionada</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const espacios = {{ espacios_json|safe }};
+        const conexiones = {{ conexiones_json|safe }};
+        const rutaIds = {{ ruta_ids|default:"[]" }};
+        
+        // Formatear nodos
+        const nodes = new vis.DataSet(espacios.map(e => {
+            let color = { background: '#95A5A6', border: '#707B7C' };
+            let shape = 'dot';
+            let size = 8;
+            let borderWidth = 1;
+            
+            if (e.tipo === 'aula') {
+                color = { background: '#4A90D9', border: '#2C5F8A' };
+                shape = 'rectangle';
+                size = 20;
+            } else if (e.tipo === 'laboratorio') {
+                color = { background: '#27AE60', border: '#1A7A40' };
+                shape = 'rectangle';
+                size = 20;
+            } else if (e.tipo === 'oficina') {
+                color = { background: '#E67E22', border: '#B35C10' };
+                shape = 'rectangle';
+                size = 20;
+            }
+            
+            // Resaltar si está en la ruta
+            if (rutaIds.includes(e.id)) {
+                color.border = '#E74C3C';
+                borderWidth = 4;
+            }
+            
+            return {
+                id: e.id,
+                label: e.label,
+                title: e.title,
+                shape: shape,
+                color: color,
+                size: size,
+                borderWidth: borderWidth,
+                font: { size: 10, face: 'arial' }
+            };
+        }));
+        
+        // Formatear aristas
+        const edges = new vis.DataSet(conexiones.map(c => {
+            let color = '#BDC3C7';
+            let width = 1.5;
+            
+            // Resaltar si es parte de la ruta consecutiva
+            for (let i = 0; i < rutaIds.length - 1; i++) {
+                if ((c.from === rutaIds[i] && c.to === rutaIds[i+1]) || 
+                    (c.from === rutaIds[i+1] && c.to === rutaIds[i])) {
+                    color = '#E74C3C';
+                    width = 4;
+                    break;
+                }
+            }
+            
+            return {
+                from: c.from,
+                to: c.to,
+                label: c.label,
+                color: color,
+                width: width,
+                font: { size: 9, align: 'middle' },
+                arrows: c.bidirectional ? '' : 'to'
+            };
+        }));
+        
+        const container = document.getElementById('grafo-fisei');
+        const data = { nodes: nodes, edges: edges };
+        const options = {
+            nodes: {
+                margin: 10
+            },
+            edges: {
+                smooth: { type: 'continuous' }
+            },
+            physics: {
+                solver: 'forceAtlas2Based',
+                forceAtlas2Based: {
+                    gravitationalConstant: -50,
+                    springLength: 100,
+                    springConstant: 0.08
+                },
+                stabilization: { iterations: 150 }
+            },
+            interaction: {
+                navigationButtons: true,
+                hover: true
+            }
+        };
+        
+        const network = new vis.Network(container, data, options);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel de Atención - SMART{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-desktop me-2"></i>Panel de Control de Ventanilla</h4>
+                <span class="badge bg-light text-primary">{{ user.get_full_name }}</span>
+            </div>
+            <div class="card-body p-4 text-center">
+                {% if turno_actual_llamado %}
+                <div class="bg-warning bg-opacity-10 p-5 border border-warning rounded mb-4">
+                    <h1 class="display-1 fw-bold text-warning mb-0">{{ turno_actual_llamado.codigo }}</h1>
+                    <p class="text-uppercase tracking-widest text-warning">Estado: LLAMADO</p>
+                    <p class="text-muted">El estudiante debe acercarse a la ventanilla.</p>
+                    <hr>
+                    <form action="{% url 'turnos:iniciar_atencion' turno_actual_llamado.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-warning btn-lg px-5 text-white">
+                            <i class="fas fa-play me-2"></i>Iniciar Atención
+                        </button>
+                    </form>
+                </div>
+                {% elif turno_actual_atencion %}
+                <div class="bg-success bg-opacity-10 p-5 border border-success rounded mb-4">
+                    <h1 class="display-1 fw-bold text-success mb-0">{{ turno_actual_atencion.codigo }}</h1>
+                    <p class="text-uppercase tracking-widest text-success">Estado: EN ATENCIÓN</p>
+                    <hr>
+                    <div class="row text-start mt-4">
+                        <div class="col-6">
+                            <p class="mb-1 text-muted">Usuario:</p>
+                            <h5 class="fw-bold">{{ turno_actual_atencion.usuario.get_full_name|default:turno_actual_atencion.usuario.username }}</h5>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-1 text-muted">Motivo:</p>
+                            <h5 class="fw-bold">{{ turno_actual_atencion.get_motivo_display }}</h5>
+                        </div>
+                    </div>
+                    <form action="{% url 'turnos:finalizar_atencion' turno_actual_atencion.id %}" method="post" class="mt-4">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg px-5">
+                            <i class="fas fa-check-circle me-2"></i>Finalizar Atención
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <div class="py-5">
+                    <i class="fas fa-user-clock fa-4x text-muted mb-3"></i>
+                    <h3>Ventanilla Disponible</h3>
+                    <p class="text-muted">No tienes ningún turno en atención en este momento.</p>
+                </div>
+                {% if not cola_vacia %}
+                <form action="{% url 'turnos:llamar_siguiente' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="fas fa-bullhorn me-2"></i>Llamar Siguiente Turno
+                    </button>
+                </form>
+                {% else %}
+                <button class="btn btn-secondary btn-lg px-5" disabled>
+                    No hay turnos en espera
+                </button>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card shadow border-info">
+            <div class="card-header bg-info text-dark">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Historial Reciente (Pila)</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for item in historial_pila %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-primary fw-bold">{{ item.fecha }}</small><br>
+                            {{ item.accion }}
+                        </div>
+                        <i class="fas fa-check text-success"></i>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center py-4 text-muted">
+                        <small>No hay acciones recientes en la pila.</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'turnos:estado_cola' %}" class="small text-decoration-none">Ver monitor público</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

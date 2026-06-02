@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Reporte de Trámites - SMART{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4"><i class="fas fa-chart-pie me-2 text-primary"></i>Reporte de Trámites</h2>
+
+        <div class="card shadow mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros de Búsqueda</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" class="row g-3">
+                    {% csrf_token %}
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Fecha Desde</label>
+                        <input type="date" name="fecha_desde" class="form-control" value="{{ filtros.fecha_desde }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Fecha Hasta</label>
+                        <input type="date" name="fecha_hasta" class="form-control" value="{{ filtros.fecha_hasta }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Estado</label>
+                        <select name="estado" class="form-select">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente" {% if filtros.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                            <option value="en_proceso" {% if filtros.estado == 'en_proceso' %}selected{% endif %}>En Proceso</option>
+                            <option value="resuelto" {% if filtros.estado == 'resuelto' %}selected{% endif %}>Resuelto</option>
+                            <option value="archivado" {% if filtros.estado == 'archivado' %}selected{% endif %}>Archivado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Tipo de Trámite</label>
+                        <select name="tipo_id" class="form-select">
+                            <option value="">Todos los tipos</option>
+                            {% for tipo in tipos %}
+                            <option value="{{ tipo.id }}" {% if filtros.tipo_id == tipo.id %}selected{% endif %}>{{ tipo.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-search me-2"></i>Generar Reporte
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if resumen %}
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white text-center shadow-sm">
+                    <div class="card-body py-3">
+                        <h6 class="text-uppercase small">Pendientes</h6>
+                        <h2 class="mb-0">{{ resumen.pendiente }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-dark text-center shadow-sm">
+                    <div class="card-body py-3">
+                        <h6 class="text-uppercase small">En Proceso</h6>
+                        <h2 class="mb-0">{{ resumen.en_proceso }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white text-center shadow-sm">
+                    <div class="card-body py-3">
+                        <h6 class="text-uppercase small">Resueltos</h6>
+                        <h2 class="mb-0">{{ resumen.resuelto }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-secondary text-white text-center shadow-sm">
+                    <div class="card-body py-3">
+                        <h6 class="text-uppercase small">Archivados</h6>
+                        <h2 class="mb-0">{{ resumen.archivado }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if tramites is not None %}
+        <div class="card shadow">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Código</th>
+                            <th>Solicitante</th>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Fecha Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in tramites %}
+                        <tr>
+                            <td><span class="fw-bold">{{ t.codigo }}</span></td>
+                            <td>{{ t.solicitante.get_full_name|default:t.solicitante.username }}</td>
+                            <td>{{ t.tipo.nombre }}</td>
+                            <td>
+                                {% if t.estado == 'pendiente' %}
+                                <span class="badge bg-secondary">Pendiente</span>
+                                {% elif t.estado == 'en_proceso' %}
+                                <span class="badge bg-info text-dark">En Proceso</span>
+                                {% elif t.estado == 'resuelto' %}
+                                <span class="badge bg-success">Resuelto</span>
+                                {% else %}
+                                <span class="badge bg-dark">Archivado</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ t.fecha_registro|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="alert alert-warning d-inline-block">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>No se encontraron trámites con esos filtros.
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

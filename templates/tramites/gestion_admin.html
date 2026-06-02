@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestión de Trámites - SMART{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4"><i class="fas fa-tasks me-2 text-primary"></i>Panel Administrativo de Trámites</h2>
+        
+        <div class="card shadow">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Código</th>
+                            <th>Solicitante</th>
+                            <th>Tipo</th>
+                            <th>Estado Actual</th>
+                            <th>Última Actualización</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tramite in tramites %}
+                        <tr>
+                            <td><span class="fw-bold">{{ tramite.codigo }}</span></td>
+                            <td>{{ tramite.solicitante.get_full_name|default:tramite.solicitante.username }}</td>
+                            <td>{{ tramite.tipo.nombre }}</td>
+                            <td>
+                                {% if tramite.estado == 'pendiente' %}
+                                <span class="badge bg-secondary">{{ tramite.get_estado_display }}</span>
+                                {% elif tramite.estado == 'en_proceso' %}
+                                <span class="badge bg-info text-dark">{{ tramite.get_estado_display }}</span>
+                                {% elif tramite.estado == 'resuelto' %}
+                                <span class="badge bg-success">{{ tramite.get_estado_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ tramite.fecha_actualizacion|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'tramites:detalle_tramite_admin' tramite.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-edit me-1"></i>Gestionar
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No hay trámites pendientes de resolución.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

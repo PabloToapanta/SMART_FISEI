@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Subir Documento - SMART{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-info text-dark">
+                <h4 class="mb-0"><i class="fas fa-file-upload me-2"></i>Asociar Documento a Nodo</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                    {% endfor %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-info">Subir y Asociar al Árbol</button>
+                        <a href="{% url 'jerarquia' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

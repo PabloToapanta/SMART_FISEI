@@ -1,0 +1,26 @@
+# Entorno Virtual
+venv/
+ENV/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+static/collected/
+
+# IDEs y S.O.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs y temporales
+*.log
+*.tmp
+*.bak

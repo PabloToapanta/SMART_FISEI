@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block title %}Organización Documental - SMART{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tree-node { margin-left: 20px; border-left: 1px dashed #ccc; padding-left: 10px; }
+    .node-title { font-weight: bold; cursor: pointer; padding: 5px; border-radius: 4px; }
+    .node-title:hover { background-color: #e9ecef; }
+    .doc-link { color: #0d6efd; text-decoration: none; font-size: 0.9em; }
+    .doc-link:hover { text-decoration: underline; }
+    .badge-facultad { background-color: #0d6efd; }
+    .badge-departamento { background-color: #198754; }
+    .badge-carrera { background-color: #ffc107; color: #000; }
+    .badge-area { background-color: #6c757d; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
+                <h4 class="mb-0"><i class="fas fa-sitemap me-2"></i>Estructura Jerárquica FISEI</h4>
+                {% if user.rol == 'admin' or user.rol == 'administrativo' %}
+                <div class="btn-group">
+                    <a href="{% url 'crear_nodo' %}" class="btn btn-sm btn-success">
+                        <i class="fas fa-plus me-1"></i>Nuevo Nodo
+                    </a>
+                    <a href="{% url 'subir_documento' %}" class="btn btn-sm btn-info">
+                        <i class="fas fa-file-upload me-1"></i>Subir Documento
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if raiz %}
+                    {% include 'documentos/partials/_render_tree.html' with nodo_arbol=raiz %}
+                {% else %}
+                    <p class="text-center text-muted">No se ha inicializado la jerarquía.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-search me-2"></i>Buscador Institucional</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="mb-3">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" placeholder="Buscar documento o área..." value="{{ query|default:'' }}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted">Búsqueda mediante recorrido DFS del Árbol N-ario.</small>
+                </form>
+
+                {% if query %}
+                    <h6>Resultados para "{{ query }}":</h6>
+                    <ul class="list-group list-group-flush mt-3">
+                        {% for res in resultados %}
+                        <li class="list-group-item px-0">
+                            {% if res.tipo == 'Nodo' %}
+                                <span class="badge badge-{{ res.obj.tipo }} me-1">{{ res.obj.get_tipo_display }}</span>
+                                <span class="fw-bold">{{ res.obj.nombre }}</span>
+                            {% else %}
+                                <i class="far fa-file-pdf me-2 text-danger"></i>
+                                <span class="text-primary">{{ res.obj.nombre }}</span><br>
+                                <small class="text-muted">Ubicación: {{ res.ruta }}</small>
+                            {% endif %}
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center text-muted">No se encontraron resultados.</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card shadow">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Leyenda</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2"><span class="badge bg-primary">F</span> Facultad</div>
+                <div class="mb-2"><span class="badge bg-success">D</span> Departamento</div>
+                <div class="mb-2"><span class="badge bg-warning text-dark">C</span> Carrera</div>
+                <div><span class="badge bg-secondary">A</span> Área / Oficina</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

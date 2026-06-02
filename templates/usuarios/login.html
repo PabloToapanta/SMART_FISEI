@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión - SMART{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0">Iniciar Sesión</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Email (o Usuario)</label>
+                        <input type="text" name="username" class="form-control" required id="id_username">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label">Contraseña</label>
+                        <input type="password" name="password" class="form-control" required id="id_password">
+                        <div class="text-end mt-1">
+                            <a href="{% url 'usuarios:password_reset' %}" class="small text-decoration-none">¿Olvidaste tu contraseña?</a>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Entrar</button>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <p class="mb-0">¿No tienes cuenta? <a href="{% url 'usuarios:registro' %}">Regístrate aquí</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Monitor de Turnos - SMART{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Turnos en Atención -->
+    <div class="col-md-8">
+        <div class="card shadow border-primary mb-4">
+            <div class="card-header bg-primary text-white py-3">
+                <h3 class="mb-0 text-center text-uppercase"><i class="fas fa-volume-up me-3"></i>Turnos en Atención</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr class="text-center">
+                            <th>TURNO</th>
+                            <th>VENTANILLA</th>
+                            <th>ESTADO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for turno in atencion %}
+                        <tr class="text-center align-middle" style="height: 100px;">
+                            <td><h1 class="display-4 fw-bold text-primary mb-0">{{ turno.codigo }}</h1></td>
+                            <td><h3>{{ turno.ventanilla.nombre }}</h3></td>
+                            <td><span class="badge bg-warning text-dark px-3 py-2 fs-5">Llamando...</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-5 text-muted">
+                                <h5>No hay turnos siendo atendidos actualmente</h5>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas de la Cola (Estructura de Datos) -->
+    <div class="col-md-4">
+        <div class="card shadow border-success mb-4 text-center">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Estado de la Cola (FIFO)</h5>
+            </div>
+            <div class="card-body py-4">
+                <h1 class="display-3 fw-bold text-success">{{ en_cola_memoria }}</h1>
+                <p class="text-muted text-uppercase mb-0">Personas en espera</p>
+                <hr>
+                <small class="text-muted">La distribución se realiza de forma rotatoria entre ventanillas activas.</small>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Últimos Atendidos</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for t in atendidos %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="fw-bold">{{ t.codigo }}</span>
+                    <small class="text-muted">{{ t.hora_fin_atencion|date:"H:i" }}</small>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-center text-muted small">Sin datos</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <a href="{% url 'usuarios:dashboard' %}" class="btn btn-outline-primary px-4">Volver al Dashboard</a>
+        {% if user.rol == 'estudiante' or user.rol == 'docente' %}
+        <a href="{% url 'turnos:solicitar_turno' %}" class="btn btn-success px-4 ms-2">Solicitar nuevo turno</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
