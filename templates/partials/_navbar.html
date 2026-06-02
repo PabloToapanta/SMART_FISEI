@@ -30,10 +30,7 @@
                         <li><a class="dropdown-item" href="{% url 'usuarios:perfil' %}">Mi Perfil</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <form action="{% url 'usuarios:logout' %}" method="post" style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="dropdown-item">Cerrar Sesión</button>
-                            </form>
+                            <a class="dropdown-item" href="{% url 'usuarios:logout' %}">Cerrar Sesión</a>
                         </li>
                     </ul>
                 </li>
